@@ -111,7 +111,8 @@ AS_IF([test -n "$RDMA_CORE_VER"], [
 AM_CONDITIONAL(OFED_BUILD,[test ${OFED_VERSION_CHK} = 1])
 AC_SUBST(OFED_BUILD)
 
-AS_IF([test ${KERNEL_VER} \> "x5.13"], [
+KERN_VER_ALIGNED=`echo ${KERNEL_VER} | tr '.' ' '`
+AS_IF([test `printf '%03d' ${KERN_VER_ALIGNED}` -gt '005013000'], [
     KERNEL_BUILD_CHK=1
 ])
 
