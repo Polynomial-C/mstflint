@@ -61,9 +61,9 @@ AM_PATH_PYTHON([2.7],, [:])
 AC_CONFIG_HEADERS(config.h)
 
 PKG_PROG_PKG_CONFIG
-if test -z "$PKG_CONFIG"; then
+AS_IF([test -z "$PKG_CONFIG"], [
   AC_MSG_ERROR([pkg-config could not be found.])
-fi
+])
 
 # OPENSSL_VERSION_NUMBER < 0x100020bf
 #0x100020bfL = openssl 1.0.2k - 26 Jan 2017
@@ -95,40 +95,40 @@ default_en_mstflint_sdk="no"
 OFED_VERSION_CHK=0
 KERNEL_BUILD_CHK=0
 
-if test -n "$OFED_VER" && test $(echo $OFED_VER $MIN_OFED_VER | tr " " "\n" | sort -V | tail -n 1) == "$OFED_VER" ; then
+AS_IF([test -n "$OFED_VER" && test $(echo $OFED_VER $MIN_OFED_VER | tr " " "\n" | sort -V | tail -n 1) = "$OFED_VER"], [
     OFED_VERSION_CHK=1
-fi
-if test -n "$RDMA_CORE_VER" ; then
-    if test ${RDMA_CORE_VER} -lt ${UPSTREAM_RDMA_CORE_VER_LIMIT} ; then
-        if test ${RDMA_CORE_VER} -ge ${MIN_UPSTREAM_RDMA_CORE_VER} ; then
+])
+AS_IF([test -n "$RDMA_CORE_VER"], [
+    AS_IF([test ${RDMA_CORE_VER} -lt ${UPSTREAM_RDMA_CORE_VER_LIMIT}], [
+        AS_IF([test ${RDMA_CORE_VER} -ge ${MIN_UPSTREAM_RDMA_CORE_VER}], [
             OFED_VERSION_CHK=1
-        fi
-    elif test ${RDMA_CORE_VER} -ge ${MIN_RDMA_CORE_VER} ; then
+        ])
+    ], [test ${RDMA_CORE_VER} -ge ${MIN_RDMA_CORE_VER}], [
         OFED_VERSION_CHK=1
-    fi
-fi
+    ])
+])
 
 AM_CONDITIONAL(OFED_BUILD,[test ${OFED_VERSION_CHK} = 1])
 AC_SUBST(OFED_BUILD)
 
-if test ${KERNEL_VER} \> "x5.13" ; then
+AS_IF([test ${KERNEL_VER} \> "x5.13"], [
     KERNEL_BUILD_CHK=1
-fi
+])
 
 AM_CONDITIONAL(KERNEL_BUILD,[test ${KERNEL_BUILD_CHK} = 1])
 AC_SUBST(KERNEL_BUILD)
 
-if test "x$OS" = "xFreeBSD"; then
+AS_IF([test "x$OS" = "xFreeBSD"], [
     AC_MSG_NOTICE(FreeBSD Build)
     MTCR_CONF_DIR="mtcr_freebsd"
-else
+], [
     MTCR_CONF_DIR="mtcr_ul"
     LDL="-ldl"
     default_en_inband="yes"
-    if test ${OFED_VERSION_CHK} -eq 1 ; then
+    AS_IF([test ${OFED_VERSION_CHK} -eq 1], [
         default_en_rdmem="yes"
-    fi
-fi
+    ])
+])
 
 
 AC_SUBST(MTCR_CONF_DIR)
@@ -162,7 +162,7 @@ AC_ARG_ENABLE(dc,
     [enable_dc="yes"]
 )
 AC_MSG_RESULT($enable_dc)
-if test "$enable_dc" = "yes"; then
+AS_IF([test "$enable_dc" = "yes"], [
     # zlib
     AC_ARG_WITH([zlib], AS_HELP_STRING([--with-zlib=PATH], [use zlib from the specified PATH]),
         [
@@ -187,7 +187,7 @@ if test "$enable_dc" = "yes"; then
     AC_MSG_NOTICE([zlib CFLAGS:'$libz_CFLAGS' LIBS:'$libz_LIBS'])
     AC_SUBST(libz_CFLAGS)
     AC_SUBST(libz_LIBS)
-fi
+])
 
 # mstfwmanager
 AC_MSG_CHECKING(--enable-fw-mgr argument)
@@ -198,7 +198,7 @@ AC_ARG_ENABLE(fw-mgr,
 )
 AC_MSG_RESULT($enable_fw_mgr)
 
-if test "x$enable_fw_mgr" = "xyes"; then
+AS_IF([test "x$enable_fw_mgr" = "xyes"], [
     # libxml2
     AC_ARG_WITH([libxml2], AS_HELP_STRING([--with-libxml2=PATH], [use libxml2 from the specified PATH]),
         [
@@ -276,7 +276,7 @@ if test "x$enable_fw_mgr" = "xyes"; then
     AC_MSG_NOTICE([zlib CFLAGS:'$libz_CFLAGS' LIBS:'$libz_LIBS'])
     AC_SUBST(libz_CFLAGS)
     AC_SUBST(libz_LIBS)
-fi
+])
 
 AC_MSG_CHECKING(--enable-dpa argument)
 AC_ARG_ENABLE(dpa,
@@ -295,7 +295,7 @@ AC_ARG_ENABLE(pldm-pkg-gen,
 )
 AC_MSG_RESULT($enable_pldm_pkg_gen)
 
-if test "x$enable_fw_mgr" = "xyes" || test "x$enable_adb_generic_tools" = "xyes" || test "x$enable_dpa" = "xyes" || test "x$enable_pldm_pkg_gen" = "xyes"; then
+AS_IF([test "x$enable_fw_mgr" = "xyes" || test "x$enable_adb_generic_tools" = "xyes" || test "x$enable_dpa" = "xyes" || test "x$enable_pldm_pkg_gen" = "xyes"], [
     AC_ARG_WITH([liblzma], AS_HELP_STRING([--with-liblzma=PATH], [use liblzma from the specified PATH]),
         [
             liblzma_dir="$withval"
@@ -319,9 +319,9 @@ if test "x$enable_fw_mgr" = "xyes" || test "x$enable_adb_generic_tools" = "xyes"
     AC_MSG_NOTICE([liblzma CFLAGS:'$liblzma_CFLAGS' LIBS:'$liblzma_LIBS'])
     AC_SUBST(liblzma_CFLAGS)
     AC_SUBST(liblzma_LIBS)
-fi
+])
 
-if test "x$enable_pldm_pkg_gen" = "xyes" && test "x$enable_fw_mgr" != "xyes"; then
+AS_IF([test "x$enable_pldm_pkg_gen" = "xyes" && test "x$enable_fw_mgr" != "xyes"], [
     AC_ARG_WITH([libcurl], AS_HELP_STRING([--with-libcurl=PATH], [use libcurl from the specified PATH]),
         [
             libcurl_dir="$withval"
@@ -345,7 +345,7 @@ if test "x$enable_pldm_pkg_gen" = "xyes" && test "x$enable_fw_mgr" != "xyes"; th
     AC_MSG_NOTICE([libcurl CFLAGS:'$libcurl_CFLAGS' LIBS:'$libcurl_LIBS'])
     AC_SUBST(libcurl_CFLAGS)
     AC_SUBST(libcurl_LIBS)
-fi
+])
 
 
 
@@ -366,7 +366,7 @@ AC_ARG_ENABLE(adb-generic-tools,
     [enable_adb_generic_tools="no"]
 )
 AC_MSG_RESULT($enable_adb_generic_tools)
-if test "x$enable_adb_generic_tools" = "xyes"; then
+AS_IF([test "x$enable_adb_generic_tools" = "xyes"], [
     # expat
     AC_ARG_WITH([expat], AS_HELP_STRING([--with-expat=PATH], [use expat from the specified PATH]),
         [
@@ -392,7 +392,7 @@ if test "x$enable_adb_generic_tools" = "xyes"; then
     AC_MSG_NOTICE([expat CFLAGS:'$expat_CFLAGS' LIBS:'$expat_LIBS'])
     AC_SUBST(expat_CFLAGS)
     AC_SUBST(expat_LIBS)
-fi
+])
 AM_CONDITIONAL(ENABLE_FWMGR, [test "x$enable_fw_mgr" = "xyes" ])
 AC_SUBST(ENABLE_FWMGR)
 
@@ -404,7 +404,7 @@ AC_ARG_ENABLE(xml2,
     [enable_xml2="no"]
 )
 AC_MSG_RESULT($enable_xml2)
-if test [ "x$enable_xml2" = "xyes" ] || [ test "x$enable_fw_mgr" = "xyes" ]; then
+AS_IF([test "x$enable_xml2" = "xyes" || test "x$enable_fw_mgr" = "xyes" ], [
     # libxml2
     AC_ARG_WITH([libxml2], AS_HELP_STRING([--with-libxml2=PATH], [use libxml2 from the specified PATH]),
         [
@@ -434,7 +434,7 @@ if test [ "x$enable_xml2" = "xyes" ] || [ test "x$enable_fw_mgr" = "xyes" ]; the
     AC_MSG_NOTICE([libxml2 CFLAGS:'$libxml2_CFLAGS' LIBS:'$libxml2_LIBS'])
     AC_SUBST(libxml2_CFLAGS)
     AC_SUBST(libxml2_LIBS)
-fi
+])
 
 AM_CONDITIONAL(DISABLE_XML2, [test "x$enable_xml2" = "xno"])
 AC_SUBST(DISABLE_XML2)
@@ -449,15 +449,15 @@ AC_ARG_ENABLE(inband,
     [enable_inband="$default_en_inband"]
 )
 AC_MSG_RESULT($enable_inband)
-if test "x$enable_inband" = "xyes"; then
+AS_IF([test "x$enable_inband" = "xyes"], [
     AC_CHECK_HEADER(infiniband/mad.h, [],
         AC_MSG_ERROR([cannot find infiniband/mad.h (--disable-inband to remove this dependency).])
     )
     MAD_IFC="mad_ifc"
-else
+], [
     CXXFLAGS="$CXXFLAGS -DNO_INBAND"
     CFLAGS="$CFLAGS -DNO_INBAND"
-fi
+])
 AC_SUBST(MAD_IFC)
 AM_CONDITIONAL(ENABLE_INBAND, [ test "x$enable_inband" = "xyes" ])
 
@@ -471,7 +471,7 @@ AC_ARG_ENABLE(nvml,
 )
 AC_MSG_RESULT($enable_nvml)
 
-if test "$enable_nvml" = "yes"; then
+AS_IF([test "$enable_nvml" = "yes"], [
     AC_ARG_WITH([nvml-include-dir], AS_HELP_STRING([--with-nvml-include-dir=DIR], [use nvml from the specified DIR]),
         [
             nvml_dir="$withval"
@@ -515,7 +515,7 @@ if test "$enable_nvml" = "yes"; then
     )
     CXXFLAGS="$CXXFLAGS -DENABLE_NVML"
     CFLAGS="$CFLAGS -DENABLE_NVML"
-fi
+])
 
 AM_CONDITIONAL(ENABLE_NVML, [ test "x$enable_nvml" = "xyes" ])
 
@@ -528,10 +528,10 @@ AC_ARG_ENABLE(cables,
     [enable_cables="$default_en_cables"]
 )
 AC_MSG_RESULT($enable_cables)
-if test "x$enable_cables" = "xyes"; then
+AS_IF([test "x$enable_cables" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -DCABLES_SUPPORT"
     CFLAGS="$CFLAGS -DCABLES_SUPPORT"
-fi
+])
 
 AM_CONDITIONAL(ENABLE_CABLES, [ test "x$enable_cables" = "xyes" ])
 
@@ -551,21 +551,21 @@ AC_ARG_ENABLE(vfio,
     [enable_vfio="$default_en_vfio"]
 )
 AC_MSG_RESULT($enable_vfio)
-if test "x$enable_vfio" = "xyes"; then
+AS_IF([test "x$enable_vfio" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -DENABLE_VFIO"
     CFLAGS="$CFLAGS -DENABLE_VFIO"
-fi
+])
 
 AM_CONDITIONAL(ENABLE_VFIO, [ test "x$enable_vfio" = "xyes" ])
 
 # Set VFIO_DRIVER_DIR based on enable_vfio flag
-if test "x$enable_vfio" = "xyes"; then
-    if test "x$OS" != "xFreeBSD"; then
+AS_IF([test "x$enable_vfio" = "xyes"], [
+    AS_IF([test "x$OS" != "xFreeBSD"], [
         VFIO_DRIVER_DIR="vfio_driver_access"
-    fi
-else
+    ])
+], [
     VFIO_DRIVER_DIR=""
-fi
+])
 ##
 
 AC_MSG_CHECKING(--enable-rdmem argument)
@@ -575,13 +575,13 @@ AC_ARG_ENABLE(rdmem,
     [enable_rdmem="$default_en_rdmem"]
 )
 AC_MSG_RESULT($enable_rdmem)
-if test "x$enable_rdmem" = "xyes"; then
+AS_IF([test "x$enable_rdmem" = "xyes"], [
     AC_CHECK_HEADERS(infiniband/mlx5dv.h infiniband/verbs.h, [],
     AC_MSG_ERROR([cannot find infiniband/mlx5dv.h or infiniband/verbs.h (--disable-rdmem to remove this dependency).]))
-else
+], [
     CXXFLAGS="$CXXFLAGS -DNO_RDMEM"
     CFLAGS="$CFLAGS -DNO_RDMEM"
-fi
+])
 AM_CONDITIONAL(ENABLE_RDMEM, [ test "x$enable_rdmem" = "xyes" ])
 
 # Enable I2C:
@@ -592,10 +592,10 @@ AC_ARG_ENABLE(i2c,
     [enable_i2c="$default_en_i2c"]
 )
 AC_MSG_RESULT($enable_i2c)
-if test "x$enable_i2c" = "xyes"; then
+AS_IF([test "x$enable_i2c" = "xyes"], [
     CXXFLAGS="$CXXFLAGS -DENABLE_MST_DEV_I2C"
     CFLAGS="$CFLAGS -DENABLE_MST_DEV_I2C"
-fi
+])
 AM_CONDITIONAL(ENABLE_MST_DEV_I2C, [ test "x$enable_i2c" = "xyes" ])
 ##
 
@@ -605,15 +605,15 @@ AC_CHECK_PROG([XZ], [xz], [xz], [no])
 # Finding the binary is not enough: a wrapper that fails, or an xz too old for
 # --check=crc32, would break the build instead of degrading to plain .csv. Probe
 # the exact flags the build uses and fall back unless they round-trip.
-if test "x$XZ" != "xno"; then
+AS_IF([test "x$XZ" != "xno"], [
     AC_MSG_CHECKING([whether $XZ can produce crc32 streams])
-    if test "x`echo mstflint_xz_probe | $XZ --check=crc32 -c 2>/dev/null | $XZ -d -c 2>/dev/null`" = "xmstflint_xz_probe"; then
+    AS_IF([test "x`echo mstflint_xz_probe | $XZ --check=crc32 -c 2>/dev/null | $XZ -d -c 2>/dev/null`" = "xmstflint_xz_probe"], [
         AC_MSG_RESULT([yes])
-    else
+    ], [
         AC_MSG_RESULT([no, installing the device DBs uncompressed])
         XZ=no
-    fi
-fi
+    ])
+])
 AM_CONDITIONAL(HAVE_XZ, [test "x$XZ" != "xno"])
 ##
 
@@ -631,10 +631,10 @@ RESOURCE_DUMP_SDK_DIR=""
 MLXREG_SDK_DIR=""
 DEVICE_DIR=""
 LOAD_SHARED_LIB_DIR=""
-if test "x$enable_mstflint_sdk" = "xyes"; then
-    if test "x$enable_adb_generic_tools" != "xyes"; then
+AS_IF([test "x$enable_mstflint_sdk" = "xyes"], [
+    AS_IF([test "x$enable_adb_generic_tools" != "xyes"], [
         AC_MSG_ERROR([--enable-mstflint-sdk requires --enable-adb-generic-tools.])
-    fi
+    ])
     CXXFLAGS="$CXXFLAGS -DMFT_SDK_EXTERNAL -DMFT_SDK_STANDALONE_BUILD"
     CFLAGS="$CFLAGS -DMFT_SDK_EXTERNAL -DMFT_SDK_STANDALONE_BUILD"
     MSTFLINT_SDK_DIR="mft_sdk"
@@ -653,12 +653,12 @@ if test "x$enable_mstflint_sdk" = "xyes"; then
     AC_CONFIG_FILES(mlxreg/mlxreg_sdk/Makefile)
     # NVML-backed GPU discovery is pulled in only when NVML is enabled; the SDK
     # source gates its use of it on ENABLE_NVML to keep the build self-consistent.
-    if test "x$enable_nvml" = "xyes"; then
+    AS_IF([test "x$enable_nvml" = "xyes"], [
         LOAD_SHARED_LIB_DIR="load_shared_library"
         AC_CONFIG_FILES(mft_core/device/nvml/Makefile)
         AC_CONFIG_FILES(mft_core/mft_core_utils/load_shared_library/Makefile)
-    fi
-fi
+    ])
+])
 
 # libmstflint_sdk.so is installed into a private directory ($(libdir)/mstflint/sdk)
 # that no dynamic linker searches by default, so consumers that link it by soname
@@ -676,14 +676,14 @@ AC_ARG_WITH(ldsoconfdir,
     [with_ldsoconfdir="$withval"],
     [with_ldsoconfdir="/etc/ld.so.conf.d"]
 )
-if test "x$with_ldsoconfdir" = "xyes"; then
+AS_IF([test "x$with_ldsoconfdir" = "xyes"], [
     with_ldsoconfdir="/etc/ld.so.conf.d"
-fi
+])
 AC_MSG_RESULT($with_ldsoconfdir)
 LDSOCONFDIR=""
-if test "x$with_ldsoconfdir" != "xno"; then
+AS_IF([test "x$with_ldsoconfdir" != "xno"], [
     LDSOCONFDIR="$with_ldsoconfdir"
-fi
+])
 AC_SUBST(LDSOCONFDIR)
 AM_CONDITIONAL(INSTALL_SDK_LDSOCONF,
     [ test "x$enable_mstflint_sdk" = "xyes" && test "x$with_ldsoconfdir" != "xno" ])
@@ -706,10 +706,10 @@ AC_ARG_ENABLE(cs,
     [enable_cs="no"]
 )
 AC_MSG_RESULT($enable_cs)
-if test "x$enable_cs" = "xyes"; then
+AS_IF([test "x$enable_cs" = "xyes"], [
     AC_CHECK_HEADER(openssl/md5.h,,AC_MSG_ERROR([cannot find openssl/md5.h . remove --enable-cs to remove this dependency or install openssl]))
     TOOLS_CRYPTO="tools_crypto"
-fi
+])
 
 AC_MSG_CHECKING(openssl argument)
 AC_ARG_ENABLE(openssl,
@@ -718,7 +718,7 @@ AC_ARG_ENABLE(openssl,
     [enable_openssl="yes"]
 )
 AC_MSG_RESULT($enable_openssl)
-if test "x$enable_openssl" = "xyes"; then
+AS_IF([test "x$enable_openssl" = "xyes"], [
     # openssl
     AC_ARG_WITH([openssl], AS_HELP_STRING([--with-openssl=PATH], [use openssl from the specified PATH]),
         [
@@ -745,7 +745,7 @@ if test "x$enable_openssl" = "xyes"; then
     AC_SUBST(openssl_CFLAGS)
     AC_SUBST(openssl_LIBS)
     TOOLS_CRYPTO="tools_crypto mlxsign_lib"
-fi
+])
 
 AC_MSG_CHECKING(--enable-all-static argument)
 AC_ARG_ENABLE([all_static],
@@ -775,19 +775,19 @@ AM_CONDITIONAL(ENABLE_OPENSSL, [test "x$enable_openssl" = "xyes"])
 AM_CONDITIONAL(ENABLE_CS, [test  "x$enable_cs" = "xyes" || test "x$enable_openssl" = "xyes"])
 
 AC_CHECK_HEADERS(iniparser.h, INIPARSER_SYSTEM_AVAILABLE="yes", INIPARSER_SYSTEM_AVAILABLE="no")
-if test "$INIPARSER_SYSTEM_AVAILABLE" = "yes"; then
+AS_IF([test "$INIPARSER_SYSTEM_AVAILABLE" = "yes"], [
     AC_SEARCH_LIBS([iniparser_load], [iniparser],
         [INIPARSER_SYSTEM_AVAILABLE="yes"],
         [INIPARSER_SYSTEM_AVAILABLE="no"]
     )
-fi
+])
 
-if test "$INIPARSER_SYSTEM_AVAILABLE" = "no"; then
+AS_IF([test "$INIPARSER_SYSTEM_AVAILABLE" = "no"], [
     INIPARSER_CFLAGS='-I$(top_srcdir)/ext_libs/iniParser'
     AC_SUBST(INIPARSER_CFLAGS)
     INIPARSER_LIBS='$(top_builddir)/ext_libs/iniParser/libiniparser.la'
     AC_SUBST(INIPARSER_LIBS)
-fi
+])
 
 AM_CONDITIONAL([USE_LOCAL_INIPARSER], [test "$INIPARSER_SYSTEM_AVAILABLE" = no])
 AS_IF([test "x$INIPARSER_SYSTEM_AVAILABLE" = "xyes" ], [
@@ -952,19 +952,19 @@ AS_IF([test "x$enable_remote" = "xyes"], [
 AC_SUBST(mst_remote_curl_CFLAGS)
 AC_SUBST(mst_remote_curl_LIBS)
 
-if test "x$enable_remote" = "xyes"; then
-    if test "x$have_cxx17" != "xyes"; then
+AS_IF([test "x$enable_remote" = "xyes"], [
+    AS_IF([test "x$have_cxx17" != "xyes"], [
         AC_MSG_ERROR([--enable-remote requires a C++17 compiler: the MST HTTP client is built as C++17])
-    fi
-    if test "x$enable_openssl" != "xyes"; then
+    ])
+    AS_IF([test "x$enable_openssl" != "xyes"], [
         AC_MSG_ERROR([--enable-remote requires openssl: the MST HTTP transport is TLS and the client pins the server key])
-    fi
+    ])
     # --enable-remote requires OpenSSL 3.0+
     PKG_CHECK_MODULES([openssl3], [openssl >= 3.0.0], [],
         [AC_MSG_ERROR([--enable-remote requires OpenSSL 3.0 or newer])])
     CFLAGS="$CFLAGS -DENABLE_MTCR_REMOTE"
     CXXFLAGS="$CXXFLAGS -DENABLE_MTCR_REMOTE"
-fi
+])
 AM_CONDITIONAL(ENABLE_MTCR_REMOTE, [test "x$enable_remote" = "xyes"])
 
 # Under --enable-remote libtool folds the MST HTTP client into libmtcr_ul, so
@@ -1030,15 +1030,15 @@ AC_LANG_POP([C++])
 CXXFLAGS="$OLD_CXXFLAGS"
 
 TOOLS_BUILD_TIME=`date  +"%b %d %Y\, %H:%M:%S"`
-if test "x$SOURCE_DATE_EPOCH" != "x"; then
+AS_IF([test "x$SOURCE_DATE_EPOCH" != "x"], [
     TOOLS_BUILD_TIME=`LC_ALL=C date -u -d @$SOURCE_DATE_EPOCH +"%b %d %Y\, %H:%M:%S"`
-fi
+])
 AC_SUBST(TOOLS_BUILD_TIME)
 
 AC_ARG_VAR(MSTFLINT_VERSION_STR, The MSTFLINT version)
-if test x"$MSTFLINT_VERSION_STR" == x; then
+AS_IF([test x"$MSTFLINT_VERSION_STR" = x], [
     MSTFLINT_VERSION_STR="$PACKAGE_STRING"
-fi
+])
 
 AC_SUBST(MSTFLINT_VERSION_STR)
 AC_DEFINE([MSTFLINT_VERSION_STR], [], [The MSTFLINT version])
@@ -1048,7 +1048,7 @@ AC_CONFIG_FILES(tools_crypto/Makefile)
 
 AM_CONDITIONAL(ENABLE_NVFWRESET, [test "x$OS" != "xFreeBSD" && test "x$enable_nvfwreset" = "xyes" ])
 
-if test "x$OS" != "xFreeBSD"; then
+AS_IF([test "x$OS" != "xFreeBSD"], [
     AC_MSG_CHECKING(--enable-nvfwreset argument)
     AC_ARG_ENABLE(nvfwreset,
         AS_HELP_STRING([--enable-nvfwreset], [enable compilation of the nvfwreset tool [default=disabled]]),
@@ -1062,12 +1062,12 @@ if test "x$OS" != "xFreeBSD"; then
     ])
     AC_SUBST(enable_nvfwreset)
     AC_SUBST(NVFWRESET_DIR)
-else
+], [
     enable_nvfwreset="no"
     NVFWRESET_DIR=""
     AC_SUBST(enable_nvfwreset)
     AC_SUBST(NVFWRESET_DIR)
-fi
+])
 
 # ibdump
 IBDUMP_DIR=""
@@ -1078,13 +1078,13 @@ AC_ARG_WITH(ibdump,
     [with_ibdump="no"]
 )
 AC_MSG_RESULT($with_ibdump)
-if test "x$with_ibdump" = "xyes"; then
+AS_IF([test "x$with_ibdump" = "xyes"], [
     AC_CHECK_HEADER(infiniband/verbs.h, [],
         AC_MSG_ERROR([cannot find infiniband/verbs.h (omit --with-ibdump to remove this dependency).])
     )
     AC_CONFIG_FILES(ibdump/Makefile)
     IBDUMP_DIR="ibdump"
-fi
+])
 AM_CONDITIONAL(ENABLE_IBDUMP, [test "x$with_ibdump" = "xyes"])
 AC_SUBST(IBDUMP_DIR)
 
@@ -1097,10 +1097,9 @@ AS_IF([test "x$enable_openssl" = "xyes"],
     ]
 )
 
-if [ test "x$enable_openssl" = "xno" ] && \
-    [ test "x$enable_fw_mgr" = "xyes" ] ; then
+AS_IF([ test "x$enable_openssl" = "xno" && test "x$enable_fw_mgr" = "xyes" ], [
     AC_MSG_ERROR([--enable-fw-mgr cannot be used with --disabled-openssl.])
-fi
+])
 
 AS_IF([test "x$enable_fw_mgr" = "xyes"], 
     [
@@ -1133,10 +1132,9 @@ AS_IF([test "x$enable_pldm_pkg_gen" = "xyes"],
 AM_CONDITIONAL(ENABLE_PLDM_PKG_GEN, [test "x$enable_pldm_pkg_gen" = "xyes"])
 AC_SUBST(PLDM_PKG_GEN)
 
-if [ test "x$enable_openssl" = "xno" ] && \
-    [ test "x$enable_dpa" = "xyes" ] ; then
+AS_IF([ test "x$enable_openssl" = "xno" && test "x$enable_dpa" = "xyes" ], [
     AC_MSG_ERROR([--enable-dpa cannot be used with --disabled-openssl.])
-fi
+])
 
 AS_IF([test "x$enable_adb_generic_tools" = "xyes"], [
         AC_CONFIG_FILES(adb_parser/Makefile)
@@ -1181,13 +1179,13 @@ AC_SUBST(XZ_UTILS_DIR)
 AC_SUBST(NVML_DIR)
 AC_SUBST(CABLE_ACCESS_DIR)
 
-if test "x$OS" = "xFreeBSD"; then
+AS_IF([test "x$OS" = "xFreeBSD"], [
     AC_MSG_NOTICE(FreeBSD MTCR)
     AC_CONFIG_FILES(mtcr_freebsd/Makefile)
-else
+], [
     AC_MSG_NOTICE(Linux MTCR)
     AC_CONFIG_FILES(mtcr_ul/Makefile)
-fi
+])
 
 AM_CONDITIONAL(LINUX_BUILD, [test  "x$OS" = "xLinux"])
 AC_SUBST(LINUX_BUILD)
